@@ -1,144 +1,131 @@
 # Product Requirements Document (PRD)
 **Project:** KBWeaver — Self-Organizing Personal Knowledge Engine
-**Status:** Draft\
-**Objective:** Build a self-maintaining, continuously evolving personal knowledge management system that autonomously synthesizes unstructured inputs into a structured, interconnected ontology.
+**Version:** 1.0
+**Status:** Draft
+**Owner:** SciScend
+**Last Updated:** 2026-04-17
 
 ---
 
-## 1. Product Vision & Scope
+## 1. Product Vision
 
-### 1.1 Product Vision
-An autonomous, self-evolving knowledge engine that acts as an active research partner. Instead of serving as a static repository, the system autonomously processes raw data, extracts conceptual entities, maps relationships via a knowledge graph, and actively identifies content gaps to accelerate continuous learning and ideation.
+### 1.1 Problem Statement
+Knowledge workers who process large volumes of unstructured information — research papers, articles, notes, code, web clippings — have no good tool that actively organizes that information for them. Existing popular tools (wikis, note apps, bookmarking services) are passive: they store what you put in, but they never synthesize, interlink, or surface what you're missing. The cognitive overhead of maintaining structure manually defeats the purpose.
 
-### 1.2 Target Audience & Core Use Case
-Designed for individual researchers, developers, and professionals who process large volumes of complex, unstructured information and need to synthesize it into structured, actionable ontologies — without the manual overhead of traditional wiki maintenance.
+### 1.2 Vision Statement
+KBWeaver is an autonomous, self-evolving personal knowledge engine that acts as an active research partner. It continuously transforms raw, unstructured inputs into a structured, interconnected knowledge base — with no manual maintenance overhead.
 
-### 1.3 Core Value Proposition
-- **Zero-Maintenance Architecture:** An autonomous LLM agent handles summarizing, interlinking, and updating Markdown files with no manual bookkeeping.
-- **Structural Awareness:** A knowledge graph provides a top-down view of the entire dataset, going beyond flat semantic search.
-- **Active Insight Generation:** The system shifts from passive retrieval to active ideation, autonomously surfacing knowledge gaps and structural improvements.
-- **No Vendor Lock-in:** All data lives in plain Markdown files on local disk, fully usable in Obsidian, Logseq, or VSCode without any intermediary service.
+### 1.3 Design Principles
+- **Autonomy over manual effort:** The system should handle organizing, linking, and updating knowledge without user intervention.
+- **Active over passive:** The system surfaces gaps, contradictions, and insights — it does not wait to be queried.
+- **Openness and portability:** All data lives in plain text files on the user's own machine. No Vendor Lock-in. No cloud dependency.Data privacy by default.
 
----
-
-## 2. User Workflows
-
-### 2.1 Omnivorous Ingestion (Raw → Normalized)
-- **Trigger:** User drops a raw file (PDF, `.docx`, `.txt`, code, web clipping) into the local `raw/` directory.
-- **Action:** A background watcher detects the file, extracts raw text via `unstructured.io`, normalizes it to Markdown, and archives the original immutably.
-
-### 2.2 Autonomous Ontology Extraction & Graph Synthesis
-- **Trigger:** Automated on successful ingestion.
-- **Action:**
-  - **Entity Resolution:** The LLM agent identifies key concepts and claims in the new content. It queries the full-text search index to find candidate existing nodes, then confirms or rejects matches, handling aliases and paraphrases.
-  - **Node Creation:** New concepts get a standalone `.md` page. Existing nodes are appended with new context and a citation to the source file.
-  - **Edge Creation:** The agent injects bidirectional wiki-links (`[[Concept]]`) into relevant nodes.
-  - **Metadata Tagging:** YAML frontmatter is generated or updated with relationship types (e.g., `relates_to`, `contradicts`, `supports`, `derived_from`).
-  - **Index Sync:** The SQLite FTS5 index and Kùzu graph are updated atomically with any new or modified nodes.
-
-### 2.3 Graph-Augmented Querying & Ideation
-- **Trigger:** User submits a query via CLI or local web UI.
-- **Action:**
-  - The SQLite FTS5 index provides the semantic entry point — returning ranked candidate nodes for the query.
-  - The system traverses the Kùzu knowledge graph from those entry nodes, collecting connected nodes and their relationship context.
-  - The LLM synthesizes a comprehensive answer grounded in the retrieved subgraph.
-  - If the synthesized answer represents a genuinely novel insight, the system autonomously formats and files it back into the wiki as a new linked node.
-
-### 2.4 Autonomous Maintenance (Linter)
-- **Trigger:** CLI command or scheduled cron job.
-- **Action:**
-  - Detects and proposes merges for duplicate or near-duplicate nodes.
-  - Flags orphan nodes (concepts with no graph connections).
-  - Highlights contradictory claims across different sources for user review.
-  - Reports graph health metrics: node count, edge density, largest disconnected subgraphs.
 
 ---
 
-## 3. Core Features
+## 2. Target Audience
 
-### 3.1 File Ingestion & Parsing Engine
-- **Directory Watcher:** Lightweight daemon (e.g., `watchdog`) monitoring `raw/`.
-- **Universal Parser:** `unstructured.io` for PDF, DOCX, HTML, plain text, and code files.
-- **Chunking Strategy:** Semantically meaningful splits before LLM processing, respecting section boundaries where detectable.
+### 2.1 Primary User
+Individual researchers, developers, and knowledge professionals who:
+- Regularly consume large volumes of complex, unstructured content
+- Need to synthesize information across many sources over time
+- Are technically capable of running a local CLI tool
+- Have been frustrated by the overhead of maintaining a traditional wiki or Zettelkasten manually
 
-### 3.2 AI Ontology Builder (The Agent)
-- **Entity Resolution via FTS + LLM:** BM25 candidate retrieval from SQLite FTS5, followed by LLM confirmation. In the future, we may add embedding infrastructure.
-- **Markdown Generation:** Clean, consistently formatted `.md` files with YAML frontmatter.
-- **Bidirectional Linking:** Native `[[wiki-link]]` style compatible with Obsidian and Logseq.
-- **YAML Management:** Dynamic frontmatter properties tracking source citations, relationship types, and timestamps.
-
-### 3.3 Knowledge Graph Engine
-- **Backend:** Kùzu (embedded, no Docker, Python-native API).
-- **Graph Mapping:** MD wiki-links and YAML metadata are the source of truth; Kùzu is a derived index rebuilt from them on demand.
-- **Gap Analysis:** Node centrality calculations and disconnected subgraph detection to surface underexplored areas.
-
-### 3.4 Search Layer
-- **Backend:** SQLite FTS5 (built into Python's `sqlite3`, zero external dependencies).
-- **Indexing:** All `.md` file content indexed on write; re-indexing triggered automatically by the watcher on any file change.
-- **Role:** Primary query entry point and entity resolution candidate generator. Replaces the vector store entirely at personal-wiki scale.
-
-### 3.5 Open Interoperability
-- **Plain Text First:** All structured outputs are local Markdown files. The graph DB and search index are derived, rebuildable artifacts — never the source of truth.
-- **Editor Compatible:** The `wiki/` folder is directly usable in Obsidian (with Graph View and Dataview), Logseq, or VSCode with no adapter layer.
+### 2.2 Out of Scope
+- Teams or collaborative use cases (no multi-user support in v1)
+- Non-technical users who cannot operate a command-line interface
+- Cloud-hosted or SaaS deployment
 
 ---
 
-## 4. System Architecture & Tech Stack
+## 3. User Workflows
 
-Designed for a fully local, privacy-first architecture
-### 4.1 Data Storage Layer
+### 3.1 Ingesting Raw Content
+**Goal:** The user should be able to drop any document into a folder and trust that it will be processed without any further action required.
 
-| Layer | Technology | Notes |
-|---|---|---|
-| Raw files | Local filesystem (`/raw`) | Immutable originals |
-| Structured wiki | Local filesystem (`/wiki`, `.md` files) | Source of truth |
-| Knowledge graph | **Kùzu** (embedded) | Derived from MD links + YAML; no Docker |
-| Search index | **SQLite FTS5** | Derived from MD content; auto-synced |
+**Workflow:**
+1. User places a raw file (PDF, Word document, plain text, code file, web clipping) into the designated input folder.
+2. The system detects the new file automatically.
+3. The file is parsed, normalized, and archived. The original is never modified.
+4. The system confirms successful ingestion to the user.
 
-> **Rationale for no vector DB:** At personal-wiki scale (up to ~5k nodes), BM25 full-text search is faster, more predictable, and lexically more precise than semantic embeddings for entity resolution and query entry. A vector store introduces a second source of truth that drifts from the MD files on direct edits, undermining the zero-maintenance goal. If the wiki grows beyond ~10k nodes or cross-lingual semantic matching becomes necessary, `sqlite-vec` can be added as a SQLite extension without changing the architecture.
+**Success criteria:**
+- No manual steps required after dropping the file.
+- Original file is preserved exactly as dropped.
+- Processing completes within a reasonable time for files up to ~50 pages.
 
-### 4.2 Application Logic & AI Layer
+---
 
-| Component | Technology | Notes |
-|---|---|---|
-| Orchestration | **Python** + LangChain or LlamaIndex | Agentic ingestion, extraction, query loops |
-| Local LLM | **Ollama** | Llama 3 8B / Mistral; NPU/iGPU offload |
-| Parsing | **unstructured.io** | Local, no external API calls |
-| Graph client | **Kùzu Python SDK** | Embedded, no server process |
-| Search client | **sqlite3** (stdlib) | FTS5; zero extra dependencies |
+### 3.2 Autonomous Knowledge Organization
+**Goal:** New content should be automatically integrated into the existing knowledge base — concepts extracted, linked to related existing content, and filed as structured notes.
 
-### 4.3 Interface Layer
+**Workflow:**
+1. After ingestion, the system identifies key concepts and claims in the new content.
+2. It checks whether each concept already exists in the knowledge base.
+3. For known concepts: the existing note is updated with new context and a citation to the source.
+4. For new concepts: a new structured note is created and linked to related existing notes.
+5. Relationships between concepts are recorded (e.g., *supports*, *contradicts*, *derived from*).
 
-| Interface | Technology | Purpose |
-|---|---|---|
-| Wiki viewer | **Obsidian** | Graph View, Dataview, daily exploration |
-| Control interface | Python CLI | Trigger ingestion, queries, linter |
-| Optional web UI | **Streamlit** | Lightweight local UI if CLI is insufficient |
+**Success criteria:**
+- New concepts are consistently identified and filed.
+- Existing concepts are correctly recognized even when phrased differently (aliases, paraphrases).
+- All notes remain valid and openable in standard Markdown editors after processing.
 
-### 4.4 Data Flow Summary
+---
 
-```
-raw/ (drop zone)
-    │
-    ▼
-[watchdog watcher]
-    │
-    ▼
-[unstructured.io parser] → normalized text chunks
-    │
-    ▼
-[LLM agent via Ollama]
-    ├─ Entity resolution  ◄─── SQLite FTS5 (candidate lookup)
-    ├─ Node create/update ────► wiki/ (.md files)  ◄── Obsidian
-    └─ Edge injection     ────► Kùzu graph DB (derived index)
-                                SQLite FTS5 (search index)
-                                    │
-                                    ▼
-                              [Query / Linter CLI]
-                                    │
-                                    ▼
-                         FTS5 entry → Kùzu traversal → LLM synthesis
-                                    │
-                                    ▼
-                         Novel insight → new .md node → wiki/
-```
+### 3.3 Querying & Insight Generation
+**Goal:** The user can ask a natural-language question and receive a synthesized, well-grounded answer that goes beyond what any single note contains.
+
+**Workflow:**
+1. User submits a query via CLI or local web interface.
+2. The system retrieves the most relevant notes and their connected context from the knowledge base.
+3. An answer is synthesized across multiple sources, with citations.
+4. If the answer represents a genuinely novel insight not already captured in the knowledge base, the system files it as a new linked note automatically.
+
+**Success criteria:**
+- Answers are grounded in actual content from the knowledge base, not hallucinated.
+- Sources are cited clearly so the user can verify.
+- Novel insights are filed back without duplicating existing content.
+
+---
+
+### 3.4 Knowledge Base Maintenance
+**Goal:** The knowledge base should stay clean, consistent, and connected over time — without the user having to audit it manually.
+
+**Workflow:**
+1. User triggers a maintenance check (manually via CLI, or on a schedule).
+2. The system reports:
+   - Duplicate or near-duplicate notes that could be merged
+   - Orphan notes with no connections to the rest of the knowledge base
+   - Contradictory claims across different sources, flagged for user review
+   - Overall health metrics (size, density of connections, isolated clusters)
+3. The user reviews suggestions and approves or dismisses each one.
+
+**Success criteria:**
+- Duplicates and orphans are reliably detected.
+- Contradictions are surfaced without requiring the user to read every note.
+- Health metrics give a meaningful picture of knowledge base quality at a glance.
+
+---
+
+## 4. Non-Functional Requirements
+
+| Requirement | Target |
+|---|---|
+| Processing latency (ingestion) | < 60 seconds for a typical 20-page document |
+| Query response time | < 15 seconds end-to-end |
+| Knowledge base scale (v1) | Up to ~5,000 notes |
+| Privacy | 100% local; zero network calls to external services |
+| Data portability | All notes readable in Obsidian, Logseq, or any Markdown editor with no conversion |
+| Supported input formats | PDF, DOCX, TXT, HTML, common code file extensions |
+
+---
+
+## 5. Out of Scope (v1)
+
+- Real-time collaborative editing or multi-user access
+- Mobile interface
+- Cloud sync or backup (user manages their own backup)
+- Support for non-English content (considered for a future version)
+- Fine-tuning or training of the underlying language model
