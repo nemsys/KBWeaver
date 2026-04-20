@@ -1,4 +1,4 @@
-# KBWeaver — System Architecture
+# KBWeaver — System Architecture Document
 **Version:** 1.0\
 **Status:** Draft\
 **Author:** Sonnet 4.6 Ext\

@@ -10,7 +10,7 @@
 ## 1. Product Vision
 
 ### 1.1 Problem Statement
-Knowledge workers who process large volumes of unstructured information — research papers, articles, notes, code, web clippings — have no good tool that actively organizes that information for them. Existing popular tools (wikis, note apps, bookmarking services) are passive: they store what you put in, but they never synthesize, interlink, or surface what you're missing. The cognitive overhead of maintaining structure manually defeats the purpose.
+Knowledge workers who process large volumes of unstructured information — research papers, articles, notes, code, web clippings — have no good tool that actively organizes that information for them. Existing popular tools (wikis, note apps, bookmarking services, etc. See: [COMPETITIVE_LANDSCAPE](./COMPETITIVE_LANDSCAPE.md)) are passive: they store what you put in, but they never synthesize, interlink, or surface what you're missing. The cognitive overhead of maintaining structure manually defeats the purpose.
 
 ### 1.2 Vision Statement
 KBWeaver is an autonomous, self-evolving personal knowledge engine that acts as an active research partner. It continuously transforms raw, unstructured inputs into a structured, interconnected knowledge base — with no manual maintenance overhead.
