@@ -15,7 +15,17 @@ Knowledge workers who process large volumes of unstructured information — rese
 ### 1.2 Vision Statement
 KBWeaver is an autonomous, self-evolving personal knowledge engine that acts as an active research partner. It continuously transforms raw, unstructured inputs into a structured, interconnected knowledge base — with no manual maintenance overhead.
 
-### 1.3 Design Principles
+### 1.3 Project Lineage
+KBWeaver builds directly on the *LLM Wiki* concept published by Andrej Karpathy
+in April 2026. Karpathy's core insight — that an LLM should act as a compiler,
+building a persistent structured wiki from raw sources rather than rediscovering
+knowledge from scratch on every query — is the intellectual foundation of this project.
+
+His published concept is intentionally minimal: an idea specification without ingestion
+automation, entity resolution, a queryable graph layer, or a maintenance agent.
+KBWeaver's scope is defined by precisely those gaps.
+
+### 1.4 Design Principles
 - **Autonomy over manual effort:** The system should handle organizing, linking, and updating knowledge without user intervention.
 - **Active over passive:** The system surfaces gaps, contradictions, and insights — it does not wait to be queried.
 - **Openness and portability:** All data lives in plain text files on the user's own machine. No Vendor Lock-in. No cloud dependency.Data privacy by default.

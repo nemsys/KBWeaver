@@ -1,0 +1,3 @@
+# Keep only md files
+.agents/artifacts/*
+!.agents/artifacts/*.md
