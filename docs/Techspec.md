@@ -2,7 +2,7 @@
 **Project:** KBWeaver — Self-Organizing Personal Knowledge Engine
 **Version:** 1.0
 **Status:** Draft
-**Owner:** [Your Name]
+**Owner:** SciScend
 **Last Updated:** 2026-04-18
 **Depends on:** SAD v1.1
 
@@ -36,12 +36,12 @@ tags: [domain, subtopic]                 # Optional. Free-form lowercase tags.
 
 **Allowed relation types:**
 
-| Type | Meaning |
-|---|---|
-| `supports` | This concept provides evidence for the target |
-| `contradicts` | This concept conflicts with or refutes the target |
+| Type           | Meaning                                                 |
+| -------------- | ------------------------------------------------------- |
+| `supports`     | This concept provides evidence for the target           |
+| `contradicts`  | This concept conflicts with or refutes the target       |
 | `derived_from` | This concept is a refinement or extension of the target |
-| `relates_to` | General association; use when no stronger type applies |
+| `relates_to`   | General association; use when no stronger type applies  |
 
 ### 1.2 Body Format
 
@@ -127,13 +127,13 @@ concurrent LLM calls competing for memory.
 
 Parsed by `unstructured.io` in local mode (no API calls):
 
-| Format | Notes |
-|---|---|
-| PDF | Text extraction; layout-aware where possible |
-| DOCX | Full text including headings and tables |
-| HTML | Body text extracted; boilerplate stripped |
-| TXT | Passed through directly |
-| Markdown | Passed through; frontmatter stripped before chunking |
+| Format     | Notes                                                      |
+| ---------- | ---------------------------------------------------------- |
+| PDF        | Text extraction; layout-aware where possible               |
+| DOCX       | Full text including headings and tables                    |
+| HTML       | Body text extracted; boilerplate stripped                  |
+| TXT        | Passed through directly                                    |
+| Markdown   | Passed through; frontmatter stripped before chunking       |
 | Code files | `.py`, `.js`, `.ts`, `.go`, `.rs`, `.sh`, `.yaml`, `.json` |
 
 Unsupported formats: the file is moved to `archive/unsupported/` and the event
@@ -153,11 +153,11 @@ processed alone, to avoid trivial agent calls on headings or captions.
 
 ### 3.4 Failure Handling
 
-| Failure | Behaviour |
-|---|---|
-| Parsing fails | File stays in `raw/`. Error logged. No data loss. |
+| Failure                  | Behaviour                                                                                                |
+| ------------------------ | -------------------------------------------------------------------------------------------------------- |
+| Parsing fails            | File stays in `raw/`. Error logged. No data loss.                                                        |
 | Agent fails mid-document | Completed nodes retained. Checkpoint file written to `logs/`. Re-run resumes from last successful chunk. |
-| Index update fails | Logged as a warning. `kbweaver rebuild` recovers consistency. |
+| Index update fails       | Logged as a warning. `kbweaver rebuild` recovers consistency.                                            |
 
 ---
 
@@ -175,10 +175,10 @@ class LLMProvider(Protocol):
 
 Supported backends:
 
-| Backend | Config key | Privacy |
-|---|---|---|
-| Ollama (local) | `ollama` | Full — no egress |
-| Anthropic Claude | `anthropic` | Cloud — requires API key |
+| Backend           | Config key      | Privacy                  |
+| ----------------- | --------------- | ------------------------ |
+| Ollama (local)    | `ollama`        | Full — no egress         |
+| Anthropic Claude  | `anthropic`     | Cloud — requires API key |
 | OpenAI-compatible | `openai_compat` | Cloud — requires API key |
 
 Default: `ollama`. Recommended model: Llama 3 8B or Mistral 7B.
@@ -268,12 +268,12 @@ Run once per text chunk:
 
 ### 5.2 Query Parameters (configurable via CLI flags or config file)
 
-| Parameter | Default | Description |
-|---|---|---|
-| `fts_top_k` | 5 | Number of FTS5 entry-point nodes |
-| `graph_depth` | 2 | Kùzu traversal depth from entry nodes |
-| `novelty_check` | true | Whether to run the novelty check step |
-| `file_insights` | true | Whether to file novel insights back into the wiki |
+| Parameter       | Default | Description                                       |
+| --------------- | ------- | ------------------------------------------------- |
+| `fts_top_k`     | 5       | Number of FTS5 entry-point nodes                  |
+| `graph_depth`   | 2       | Kùzu traversal depth from entry nodes             |
+| `novelty_check` | true    | Whether to run the novelty check step             |
+| `file_insights` | true    | Whether to file novel insights back into the wiki |
 
 ---
 
@@ -281,13 +281,13 @@ Run once per text chunk:
 
 ### 6.1 Checks
 
-| Check | Method | Output |
-|---|---|---|
-| Duplicate nodes | FTS5 title+alias similarity, confirmed by LLM | Merge proposals |
-| Orphan nodes | Kùzu: nodes with zero edges | List with suggested links |
-| Contradictory claims | LLM cross-referencing nodes connected by `contradicts` edges | Review queue |
-| Disconnected subgraphs | Kùzu connected-components query | Cluster report |
-| Stale nodes | Nodes with `updated` > 90 days ago and zero incoming edges | Archival candidates |
+| Check                  | Method                                                       | Output                    |
+| ---------------------- | ------------------------------------------------------------ | ------------------------- |
+| Duplicate nodes        | FTS5 title+alias similarity, confirmed by LLM                | Merge proposals           |
+| Orphan nodes           | Kùzu: nodes with zero edges                                  | List with suggested links |
+| Contradictory claims   | LLM cross-referencing nodes connected by `contradicts` edges | Review queue              |
+| Disconnected subgraphs | Kùzu connected-components query                              | Cluster report            |
+| Stale nodes            | Nodes with `updated` > 90 days ago and zero incoming edges   | Archival candidates       |
 
 ### 6.2 Report Format
 

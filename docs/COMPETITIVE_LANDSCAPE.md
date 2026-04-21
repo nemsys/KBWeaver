@@ -52,33 +52,9 @@ KBWeaver's output, not a competing approach.
 ---
 
 ### 3. Karpathy's LLM Wiki
-**What it is:** A concept document (a GitHub Gist, published April 2026) describing
-a personal knowledge base where an LLM acts as a "compiler" — reading raw documents
-and writing structured, interlinked Markdown wiki pages, rather than doing stateless
-RAG on every query. No ingestion automation, no graph database, no search index.
-An idea spec, not a finished product.
+For a discussion of Karpathy's LLM Wiki concept—which forms the intellectual foundation of this project—please see **Section 1.3 Project Lineage** in [PRD.md](./PRD.md).
 
-**Pros vs KBWeaver:**
-- The core insight is essentially the same: accumulate knowledge structurally instead
-  of retrieving raw chunks on every query
-- Maximally simple: just an LLM and a folder of Markdown files
-- No dependencies, no infrastructure, no setup
-- Already generating significant community interest and adoption
-
-**Cons vs KBWeaver:**
-- No automation: the user manually triggers the LLM to process documents
-- No entity resolution: the LLM may create duplicate concept pages across sessions
-- No structured graph: navigation is flat Markdown with wiki-links, no queryable
-  graph traversal
-- No search index: querying means loading all files into context, which hits limits
-  as the wiki grows
-- No linter or maintenance agent: the wiki degrades silently over time
-- No UI of any kind: raw files and an LLM prompt
-
-**KBWeaver's angle:** KBWeaver is essentially Karpathy's LLM Wiki with the full
-engineering around it — automated ingestion, entity resolution, a queryable graph,
-a search index, and a maintenance layer. The concept is validated; KBWeaver is
-the productized implementation.
+**KBWeaver's angle:** KBWeaver is essentially the productized implementation of Karpathy's LLM Wiki concept, adding the full engineering required for a complete system: automated ingestion, entity resolution, a queryable graph, a search index, and a maintenance layer.
 
 ---
 

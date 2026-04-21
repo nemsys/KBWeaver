@@ -63,7 +63,7 @@ Individual researchers, developers, and knowledge professionals who:
 **Success criteria:**
 - No manual steps required after dropping the file.
 - Original file is preserved exactly as dropped.
-- Processing completes within a reasonable time for files up to ~50 pages.
+- Processing completes within a reasonable time for a typical 20-page document.
 
 ---
 
@@ -138,4 +138,5 @@ Individual researchers, developers, and knowledge professionals who:
 - Mobile interface
 - Cloud sync or backup (user manages their own backup)
 - Support for non-English content (considered for a future version)
-- Fine-tuning or training of the underlying language model
+
+*Note: For technical and architectural exclusions (e.g., vector embeddings, Windows support), see [ARCHITECTURE.md](./ARCHITECTURE.md).*

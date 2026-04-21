@@ -2,7 +2,7 @@
 **Project:** KBWeaver — Self-Organizing Personal Knowledge Engine
 **Version:** 1.1
 **Status:** Draft
-**Owner:** [Your Name]
+**Owner:** SciScend
 **Last Updated:** 2026-04-18
 **Depends on:** PRD v1.0
 
@@ -105,22 +105,22 @@ without changing anything else in the architecture.
 ### 5.1 Ingestion Engine
 Watches `raw/` for new files. Parses and chunks them. Passes chunks to the Agent.
 Moves originals to `archive/` on success. Leaves failed files in `raw/` for retry.
-Detailed specification: see TECHSPEC-ingestion.md.
+Detailed specification: see Techspec.md (Section 3. Ingestion Engine).
 
 ### 5.2 Agent (Ontology Builder)
 The core intelligence. Resolves concepts from text chunks against existing wiki nodes,
 then creates or updates `.md` files. Never deletes nodes autonomously.
-Detailed specification: see TECHSPEC-agent.md.
+Detailed specification: see Techspec.md (Section 4. Agent).
 
 ### 5.3 Query Engine
 Accepts a natural-language query. Uses FTS5 to find entry-point nodes, traverses the
 Kùzu graph for connected context, and synthesizes a cited answer via the LLM.
-Detailed specification: see TECHSPEC-query-linter.md.
+Detailed specification: see Techspec.md (Section 5. Query Engine).
 
 ### 5.4 Linter
 Periodic maintenance agent. Detects duplicates, orphan nodes, and contradictory claims.
 Produces a report and applies fixes only on explicit user confirmation.
-Detailed specification: see TECHSPEC-query-linter.md.
+Detailed specification: see Techspec.md (Section 6. Linter).
 
 ---
 
@@ -134,8 +134,8 @@ verified as part of the integration test suite.
 
 ## 7. Out of Scope (v1)
 
-- Vector embeddings or semantic search
-- Multi-user or collaborative access
-- Cloud deployment or sync
+- Vector embeddings or semantic search (using BM25 full-text instead)
 - Model fine-tuning on the wiki corpus
 - Windows support (`unstructured.io` local mode has Linux/macOS dependencies)
+
+*Note: For product and feature-level exclusions (e.g., mobile interface, multi-user), see PRD v1.0.*
