@@ -97,7 +97,7 @@ Database directory: `db/graph/`
 NODE Concept {
     id:     STRING  -- Primary key. Matches YAML id and filename stem.
     title:  STRING
-    tags:   STRING  -- Comma-separated; Kùzu does not support native string arrays in v0.x
+    tags:   STRING  -- Space-separated; Kùzu does not support native string arrays in v0.x
 }
 
 EDGE Relation FROM Concept TO Concept {
@@ -378,8 +378,8 @@ model = "llama3:8b"
 base_url = "http://localhost:11434"
 
 [ingestion]
-chunk_min_tokens = 50
-chunk_max_tokens = 800
+chunk_merge_threshold_tokens = 50   # chunks below this get merged into the next
+chunk_max_tokens = 800              # hard upper bound; split if exceeded
 
 [query]
 fts_top_k = 5

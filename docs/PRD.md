@@ -1,9 +1,9 @@
 # Product Requirements Document (PRD)
-**Project:** KBWeaver — Self-Organizing Personal Knowledge Engine
-**Version:** 1.0
-**Status:** Draft
-**Owner:** SciScend
-**Last Updated:** 2026-04-17
+**Project:** KBWeaver — Self-Organizing Personal Knowledge Engine\
+**Version:** 1.0\
+**Status:** Draft\
+**Owner:** SciScend\
+**Last Updated:** 2026-04-17\
 
 ---
 
@@ -121,14 +121,14 @@ Individual researchers, developers, and knowledge professionals who:
 
 ## 4. Non-Functional Requirements
 
-| Requirement | Target |
-|---|---|
-| Processing latency (ingestion) | < 60 seconds for a typical 20-page document |
-| Query response time | < 15 seconds end-to-end |
-| Knowledge base scale (v1) | Up to ~5,000 notes |
-| Privacy | 100% local; zero network calls to external services |
-| Data portability | All notes readable in Obsidian, Logseq, or any Markdown editor with no conversion |
-| Supported input formats | PDF, DOCX, TXT, HTML, common code file extensions |
+| Requirement                    | Target                                                                            |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| Processing latency (ingestion) | < 60 seconds for a typical 20-page document                                       |
+| Query response time            | < 15 seconds end-to-end                                                           |
+| Knowledge base scale (v1)      | Up to ~5,000 notes                                                                |
+| Privacy                        | Local by default; cloud LLM backends are opt-in and require explicit config       |
+| Data portability               | All notes readable in Obsidian, Logseq, or any Markdown editor with no conversion |
+| Supported input formats        | PDF, DOCX, TXT, HTML, common code file extensions                                 |
 
 ---
 

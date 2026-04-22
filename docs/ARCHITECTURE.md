@@ -10,7 +10,7 @@
 
 ## 1. Core Principles
 
-Every architectural decision in this project is governed by three rules, in priority order:
+Every architectural decision in this project is governed by next rules, in priority order:
 
 1. **Markdown is the source of truth.** The graph database and search index are derived
    artifacts. Deleting them and running `kbweaver rebuild` must restore the system fully
@@ -79,17 +79,17 @@ wiki/ is queryable via CLI or Obsidian
 
 ## 4. Technology Choices
 
-| What | How | Why |
-|---|---|---|
-| Document parsing | `unstructured.io` (local) | Handles PDF, DOCX, HTML, TXT, code — no API calls |
-| File watching | `watchdog` | Lightweight daemon; detects new files in `raw/` automatically |
-| LLM inference | Ollama — Llama 3 8B or Mistral 7B | Fully local; NPU/iGPU offload on supported hardware |
-| Full-text search | SQLite FTS5 via Python `sqlite3` | Zero dependencies; BM25 built-in; fast at personal-wiki scale |
-| Knowledge graph | Kùzu (embedded) | No Docker, no server; Python-native API; files in `db/graph/` |
-| Wiki storage | Local `.md` files | Plain text; works in Obsidian, Logseq, or any editor |
-| Orchestration | Python + LangChain or LlamaIndex | Standard agentic loop tooling |
-| Primary interface | Python CLI | Scriptable; cron-compatible; no UI dependency |
-| Optional UI | Streamlit | Local browser interface if CLI is not enough |
+| What              | How                               | Why                                                           |
+| ----------------- | --------------------------------- | ------------------------------------------------------------- |
+| Document parsing  | `unstructured.io` (local)         | Handles PDF, DOCX, HTML, TXT, code — no API calls             |
+| File watching     | `watchdog`                        | Lightweight daemon; detects new files in `raw/` automatically |
+| LLM inference     | Ollama — Llama 3 8B or Mistral 7B | Fully local; NPU/iGPU offload on supported hardware           |
+| Full-text search  | SQLite FTS5 via Python `sqlite3`  | Zero dependencies; BM25 built-in; fast at personal-wiki scale |
+| Knowledge graph   | Kùzu (embedded)                   | No Docker, no server; Python-native API; files in `db/graph/` |
+| Wiki storage      | Local `.md` files                 | Plain text; works in Obsidian, Logseq, or any editor          |
+| Orchestration     | Python + LangChain or LlamaIndex  | Standard agentic loop tooling                                 |
+| Primary interface | Python CLI                        | Scriptable; cron-compatible; no UI dependency                 |
+| Optional UI       | Streamlit                         | Local browser interface if CLI is not enough                  |
 
 **On the choice of SQLite FTS5 over a vector store:** At up to ~5,000 nodes, BM25
 full-text search is faster and more predictable than semantic embeddings for entity
