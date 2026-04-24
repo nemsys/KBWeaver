@@ -1,10 +1,11 @@
 # Technical Specification
 **Project:** KBWeaver — Self-Organizing Personal Knowledge Engine
-**Version:** 1.0
+**Version:** 1.1
 **Status:** Draft
 **Owner:** SciScend
-**Last Updated:** 2026-04-18
-**Depends on:** SAD v1.1
+**Last Updated:** 2026-04-24
+**Depends on:** PRD v1.1, SAD v1.2
+**Changelog:** v1.1 — Kùzu removed; all graph operations migrated to SQLite adjacency tables in `search.db`; LLM model recommendation split by pipeline stage; per-subsystem timing added per SAD §7.
 
 ---
 
@@ -59,8 +60,9 @@ Body text written by the Agent. Plain Markdown prose. No special syntax required
 ```
 
 **Why relations appear in both YAML and the body:**
-- YAML `relations` block: machine-readable typed edges consumed by Kùzu and the Linter.
+- YAML `relations` block: machine-readable typed edges consumed by the adjacency tables in `search.db` and by the Linter.
 - `[[wiki-links]]` in the body: human navigation, compatible with Obsidian Graph View.
+
 Both must be kept in sync by the Agent on every write.
 
 ---
@@ -72,7 +74,7 @@ Both must be kept in sync by the Agent on every write.
 Database file: `db/search.db`
 
 ```sql
-CREATE VIRTUAL TABLE nodes USING fts5(
+CREATE VIRTUAL TABLE fts_nodes USING fts5(
     id,           -- Matches the YAML id field and filename stem
     title,        -- Matches the YAML title field
     aliases,      -- Space-separated alias list from YAML
@@ -89,25 +91,31 @@ entry point.
 The index is updated on every `.md` write by the Agent. It is never written to directly
 — only the Agent writes `.md` files, which then trigger index updates.
 
-### 2.2 Kùzu Graph Schema
+### 2.2 Graph Adjacency Tables
 
-Database directory: `db/graph/`
+Database file: `db/search.db` (same file as FTS5 index — no secondary directory or external process)
 
-```
-NODE Concept {
-    id:     STRING  -- Primary key. Matches YAML id and filename stem.
-    title:  STRING
-    tags:   STRING  -- Space-separated; Kùzu does not support native string arrays in v0.x
-}
+```sql
+CREATE TABLE nodes (
+    id    TEXT PRIMARY KEY,   -- slug derived from note title; matches YAML id and filename stem
+    title TEXT NOT NULL,
+    path  TEXT NOT NULL       -- relative path within wiki/
+);
 
-EDGE Relation FROM Concept TO Concept {
-    type:   STRING  -- One of: supports | contradicts | derived_from | relates_to
-}
+CREATE TABLE edges (
+    src      TEXT NOT NULL,   -- node id
+    dst      TEXT NOT NULL,   -- node id
+    rel_type TEXT NOT NULL    -- supports | contradicts | derived_from | relates_to
+);
+
+CREATE INDEX idx_edges_src ON edges(src);
+CREATE INDEX idx_edges_dst ON edges(dst);
 ```
 
 The graph is populated by parsing the `relations` block in YAML frontmatter.
-It is rebuilt in full by `kbweaver rebuild`. It is never the write-ahead store —
-the `.md` files are always written first.
+Graph traversal is in-process BFS over an adjacency list loaded from these tables.
+The entire `db/` directory is derived state — deleting it and running `kbweaver rebuild`
+restores full functionality from `wiki/` alone.
 
 ---
 
@@ -159,6 +167,29 @@ processed alone, to avoid trivial agent calls on headings or captions.
 | Agent fails mid-document | Completed nodes retained. Checkpoint file written to `logs/`. Re-run resumes from last successful chunk. |
 | Index update fails       | Logged as a warning. `kbweaver rebuild` recovers consistency.                                            |
 
+### 3.5 Ingestion Report
+
+Emitted on completion of every file. Written to stdout and appended to `logs/ingestion.log`.
+
+```
+KBWeaver Ingestion Report — 2026-04-24T10:00:00
+================================================
+Source:            quarterly-review.pdf
+Chunks processed:  34
+Nodes created:     8
+Nodes updated:     12
+Edges added:       19
+
+Timing
+  Parse:            3.2s
+  Entity resolution: 41.4s   (LLM: llama3.2:3b, 34 calls)
+  Index sync:        0.3s
+  Total:            44.9s
+```
+
+Timing is reported per stage so the user can identify which component to swap
+if latency is unacceptable on their hardware (see PRD §4.2).
+
 ---
 
 ## 4. Agent (Ontology Builder)
@@ -181,11 +212,21 @@ Supported backends:
 | Anthropic Claude  | `anthropic`     | Cloud — requires API key |
 | OpenAI-compatible | `openai_compat` | Cloud — requires API key |
 
-Default: `ollama`. Recommended model: Llama 3 8B or Mistral 7B.
+Default: `ollama`.
+
+**Model selection by pipeline stage:**
+
+| Stage                          | Recommended model | Rationale                                                                                                                                                             |
+| ------------------------------ | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Entity resolution (§4.2)       | `llama3.2:3b`     | Repetitive structured classification; throughput matters more than reasoning depth. Benchmark against `llama3:8b` before committing — use 3B if accuracy is adequate. |
+| Answer synthesis (§5.1 step 4) | `llama3:8b`       | Cross-note reasoning; quality matters more than speed.                                                                                                                |
+
+Mistral 7B (Apache 2.0) is an alternative for either stage if the Meta Community License is a constraint.
+Both models are configured separately — see §8.
 
 ### 4.2 Entity Resolution Algorithm
 
-Run once per text chunk:
+Run once per text chunk using the entity resolution model:
 
 ```
 1. EXTRACT
@@ -194,7 +235,7 @@ Run once per text chunk:
 
 2. LOOKUP
    For each candidate concept name:
-     Query FTS5: SELECT id, title, aliases FROM nodes WHERE nodes MATCH '<name>'
+     Query FTS5: SELECT id, title, aliases FROM fts_nodes WHERE fts_nodes MATCH '<name>'
      Take top 5 results by BM25 rank.
 
 3. CONFIRM
@@ -219,14 +260,14 @@ Run once per text chunk:
 
 6. SYNC
    Update FTS5 index for all touched nodes.
-   Update Kùzu graph for all new or modified edges.
+   Update adjacency tables (nodes + edges) in search.db for all new or modified edges.
 ```
 
 ### 4.3 Agent Constraints
 
 - The Agent **never deletes nodes.** Deletion is a Linter action requiring explicit
   user confirmation.
-- All writes go to `.md` files first. Index updates are always secondary.
+- All writes go to `.md` files first. Index and graph updates are always secondary.
 - Every run produces a log entry in `logs/` with: timestamp, input file,
   chunks processed, nodes created, nodes updated, edges added.
 
@@ -238,12 +279,13 @@ Run once per text chunk:
 
 ```
 1. SEARCH
-   User query string → FTS5 full-text search
+   User query string → FTS5 full-text search against fts_nodes
    Returns: top-k node IDs ranked by BM25 (default k=5)
 
 2. TRAVERSE
    For each entry-point node:
-     Kùzu graph traversal up to depth 2
+     Load adjacency list from edges table in search.db
+     BFS traversal up to depth 2
      Collect all connected nodes and their relation types
    Deduplicate collected node set.
 
@@ -253,7 +295,7 @@ Run once per text chunk:
    Concatenate into a structured context block with relation annotations.
 
 4. SYNTHESIZE
-   Prompt the LLM with:
+   Prompt the synthesis LLM (llama3:8b) with:
      - The user's original query
      - The assembled context block
    Instruction: "Answer using only the provided context. Cite sources by node title."
@@ -264,6 +306,10 @@ Run once per text chunk:
    in the provided context nodes?"
    If YES → Agent creates a new linked node for the insight.
    If NO → answer returned as-is.
+
+6. REPORT
+   Query latency reported per stage:
+     FTS5 lookup, graph traversal, context assembly, LLM synthesis.
 ```
 
 ### 5.2 Query Parameters (configurable via CLI flags or config file)
@@ -271,7 +317,7 @@ Run once per text chunk:
 | Parameter       | Default | Description                                       |
 | --------------- | ------- | ------------------------------------------------- |
 | `fts_top_k`     | 5       | Number of FTS5 entry-point nodes                  |
-| `graph_depth`   | 2       | Kùzu traversal depth from entry nodes             |
+| `graph_depth`   | 2       | BFS traversal depth from entry nodes              |
 | `novelty_check` | true    | Whether to run the novelty check step             |
 | `file_insights` | true    | Whether to file novel insights back into the wiki |
 
@@ -281,18 +327,18 @@ Run once per text chunk:
 
 ### 6.1 Checks
 
-| Check                  | Method                                                       | Output                    |
-| ---------------------- | ------------------------------------------------------------ | ------------------------- |
-| Duplicate nodes        | FTS5 title+alias similarity, confirmed by LLM                | Merge proposals           |
-| Orphan nodes           | Kùzu: nodes with zero edges                                  | List with suggested links |
-| Contradictory claims   | LLM cross-referencing nodes connected by `contradicts` edges | Review queue              |
-| Disconnected subgraphs | Kùzu connected-components query                              | Cluster report            |
-| Stale nodes            | Nodes with `updated` > 90 days ago and zero incoming edges   | Archival candidates       |
+| Check                  | Method                                                                                     | Output                    |
+| ---------------------- | ------------------------------------------------------------------------------------------ | ------------------------- |
+| Duplicate nodes        | FTS5 title+alias similarity, confirmed by LLM                                              | Merge proposals           |
+| Orphan nodes           | `SELECT id FROM nodes WHERE id NOT IN (SELECT src FROM edges UNION SELECT dst FROM edges)` | List with suggested links |
+| Contradictory claims   | LLM cross-referencing nodes connected by `contradicts` edges                               | Review queue              |
+| Disconnected subgraphs | In-process connected-components over adjacency list loaded from edges table                | Cluster report            |
+| Stale nodes            | Nodes with `updated` > 90 days ago and zero incoming edges                                 | Archival candidates       |
 
 ### 6.2 Report Format
 
 ```
-KBWeaver Lint Report — 2026-04-18T10:00:00
+KBWeaver Lint Report — 2026-04-24T10:00:00
 ==========================================
 Total nodes:              1,247
 Total edges:              4,832
@@ -303,6 +349,8 @@ Duplicate candidates:      7    [run: kbweaver lint --apply duplicates]
 Contradictions flagged:    4    [manual review required]
 Disconnected clusters:     2    [largest: 12 nodes — topic: "audio-synthesis"]
 Stale nodes:               9    [run: kbweaver lint --apply stale]
+
+Timing:                    8.3s
 ```
 
 ### 6.3 Interactive Apply Mode
@@ -350,14 +398,14 @@ kbweaver lint --apply [check]
   Optional [check]: orphans | duplicates | stale | all (default: all)
 
 kbweaver rebuild
-  Rebuild both the FTS5 index and the Kùzu graph from wiki/ files.
+  Rebuild all derived state in db/search.db from wiki/ files.
   Equivalent to: kbweaver rebuild-index && kbweaver rebuild-graph
 
 kbweaver rebuild-index
-  Rebuild only the SQLite FTS5 index.
+  Rebuild only the FTS5 virtual table in search.db.
 
 kbweaver rebuild-graph
-  Rebuild only the Kùzu graph.
+  Rebuild only the nodes and edges adjacency tables in search.db.
 
 kbweaver status
   Print a one-page graph health summary (node count, edge count,
@@ -373,13 +421,18 @@ CLI flags override config file values.
 
 ```toml
 [llm]
-backend = "ollama"          # ollama | anthropic | openai_compat
-model = "llama3:8b"
+backend = "ollama"
 base_url = "http://localhost:11434"
 
+[llm.entity_resolution]
+model = "llama3.2:3b"    # Used by Agent (§4.2). Swap to llama3:8b if accuracy is inadequate.
+
+[llm.synthesis]
+model = "llama3:8b"      # Used by Query Engine (§5.1 step 4).
+
 [ingestion]
-chunk_merge_threshold_tokens = 50   # chunks below this get merged into the next
-chunk_max_tokens = 800              # hard upper bound; split if exceeded
+chunk_merge_threshold_tokens = 50
+chunk_max_tokens = 800
 
 [query]
 fts_top_k = 5
@@ -389,4 +442,4 @@ file_insights = true
 
 [linter]
 stale_threshold_days = 90
-```
+```****
