@@ -30,7 +30,7 @@ timestamp: <YYYYMMDD_HHMMSS>
 
 4. **Git Commit**
    - Format: `<task_name>: <short_description>`
-   - Use name and email from local `.git/config`, if not found - use global git config or default user.
+   - Author: use your model name with version and mode, i.e. Claude Opus 4.6 (Thinking), Gemini 3.1 Pro (Low)
    - Never commit: credentials, `.env` files or untracked large files.
 
 ## Restrictions
