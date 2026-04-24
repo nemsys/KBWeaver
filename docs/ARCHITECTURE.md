@@ -1,9 +1,9 @@
 # System Architecture Document (SAD)
-**Project:** KBWeaver — Self-Organizing Personal Knowledge Engine
-**Version:** 1.1
-**Status:** Draft
-**Owner:** SciScend
-**Last Updated:** 2026-04-18
+**Project:** KBWeaver — Self-Organizing Personal Knowledge Engine\
+**Version:** 1.1\
+**Status:** Draft\
+**Owner:** SciScend\
+**Last Updated:** 2026-04-18\
 **Depends on:** PRD v1.0
 
 ---
@@ -50,6 +50,7 @@ to open it.
 ## 3. Data Flow
 
 ```
+<!-- MC:{"id":"c1","anchor":"unstructured","comment":"Is it ok to impose concrete library here, rather than in tech spec?","line":52} -->
 User drops file into raw/
         │
         ▼
