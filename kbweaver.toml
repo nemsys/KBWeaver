@@ -1,0 +1,22 @@
+[llm]
+backend = "ollama"
+base_url = "http://localhost:11434"
+
+[llm.entity_resolution]
+model = "llama3.2:3b"
+
+[llm.synthesis]
+model = "llama3:8b"
+
+[ingestion]
+chunk_merge_threshold_tokens = 50
+chunk_max_tokens = 800
+
+[query]
+fts_top_k = 5
+graph_depth = 2
+novelty_check = true
+file_insights = true
+
+[linter]
+stale_threshold_days = 90

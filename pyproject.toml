@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "kbweaver"
+version = "0.1.0"
+description = "Self-Organizing Personal Knowledge Engine"
+readme = "docs/PRD.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+
+dependencies = [
+    "click>=8.1",
+    "pyyaml>=6.0",
+    "tomli>=2.0;python_version<'3.11'",
+    "tomli-w>=1.0",
+    "watchdog>=4.0",
+    "requests>=2.31",
+    "unstructured>=0.16",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+kbweaver = "kbweaver.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["kbweaver*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
