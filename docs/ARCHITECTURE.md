@@ -59,24 +59,7 @@ The `wiki/` folder is a valid Obsidian vault. No configuration or adapter is req
 
 ### 3.1 Graph Representation Schema
 
-The graph lives in `search.db` alongside the FTS5 index. Two tables, no additional dependency:
-
-```sql
-CREATE TABLE nodes (
-    id    TEXT PRIMARY KEY,   -- slug derived from note title
-    title TEXT NOT NULL,
-    path  TEXT NOT NULL       -- relative path within wiki/
-);
-
-CREATE TABLE edges (
-    src      TEXT NOT NULL,   -- node id
-    dst      TEXT NOT NULL,   -- node id
-    rel_type TEXT NOT NULL    -- e.g. 'supports', 'contradicts', 'derived_from'
-);
-
-CREATE INDEX idx_edges_src ON edges(src);
-CREATE INDEX idx_edges_dst ON edges(dst);
-```
+The graph lives in `search.db` alongside the FTS5 index. Two tables (`nodes`, `edges`), no additional dependency. The full DDL and column-level documentation are defined in [Techspec.md §2.2 — Graph Adjacency Tables](./TECH_SPEC.md#22-graph-adjacency-tables).
 
 Graph traversal is BFS over an in-process adjacency list loaded from these tables. At ≤5,000 nodes this is fast enough to be unnoticeable. If the knowledge base grows significantly beyond that threshold, the same tables support the same queries — the only change would be adding query-level optimisation (depth limits, caching), not a database swap.
 
