@@ -92,7 +92,8 @@ Individual researchers, developers, and knowledge professionals who:
 1. User places a raw file (PDF, Word document, plain text, code file, web clipping) into the designated input folder.
 2. The system detects the new file automatically.
 3. The file is parsed, normalized, and archived. The original is never modified.
-4. The system confirms successful ingestion to the user and write consise report.
+4. The system confirms successful ingestion to the user.
+5. A concise ingestion report is generated, summarising: extracted concepts, source metadata, and any new links created in the knowledge base.
 
 
 **Success criteria:**
@@ -143,6 +144,7 @@ Individual researchers, developers, and knowledge professionals who:
 
 
 1. User submits a query via CLI or local web interface.
+<!-- MC:{"id":"c1","anchor":"automatically","comment":"Maybe better not to be automatically, but to ask user first?","line":146} -->
 2. The system retrieves the most relevant notes and their connected context from the knowledge base.
 3. An answer is synthesized across multiple sources, with citations.
 4. If the answer represents a genuinely novel insight not already captured in the knowledge base, the system files it as a new linked note automatically.
