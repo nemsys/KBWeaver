@@ -13,7 +13,7 @@
 
 ### 1.1 Problem Statement
 
-Knowledge workers who process large volumes of unstructured information — research papers, articles, notes, code, web clippings — have no good tool that actively organises that information for them. Existing popular tools (wikis, note apps, bookmarking services — see [COMPETITIVE_LANDSCAPE](./COMPETITIVE_LANDSCAPE.md)) are passive: they store what you put in, but they never synthesise, interlink, or surface what you're missing. The cognitive overhead of maintaining structure manually defeats the purpose.
+Knowledge workers who process large volumes of unstructured information — research papers, articles, notes, code, web clippings — have no good tool that actively organizes that information for them. Existing popular tools (wikis, note apps, bookmarking services — see [COMPETITIVE_LANDSCAPE](./COMPETITIVE_LANDSCAPE.md)) are passive: they store what you put in, but they never synthesize, interlink, or surface what you're missing. The cognitive overhead of maintaining structure manually defeats the purpose.
 
 ### 1.2 Vision Statement
 
@@ -27,7 +27,7 @@ His published concept is intentionally minimal: an idea specification without in
 
 ### 1.4 Design Principles
 
-- **Autonomy over manual effort:** The system should handle organising, linking, and updating knowledge without user intervention.
+- **Autonomy over manual effort:** The system should handle organizing, linking, and updating knowledge without user intervention.
 - **Active over passive:** The system surfaces gaps, contradictions, and insights — it does not wait to be queried.
 - **Openness and portability:** All data lives in plain text files on the user's own machine. No vendor lock-in. No cloud dependency (cloud LLM backends are an optional upgrade). Data privacy by default.
 - **Composability over fixed targets:** No performance number in this document is a hard constraint. When a component becomes a bottleneck, it is replaced. The architecture is designed to make that replacement cheap.
@@ -41,7 +41,7 @@ His published concept is intentionally minimal: an idea specification without in
 Individual researchers, developers, and knowledge professionals who:
 
 - Regularly consume large volumes of complex, unstructured content
-- Need to synthesise information across many sources over time
+- Need to synthesize information across many sources over time
 - Are technically capable of running a local CLI tool
 - Have been frustrated by the overhead of maintaining a traditional wiki or Zettelkasten manually
 
@@ -63,9 +63,9 @@ Individual researchers, developers, and knowledge professionals who:
 
 1. User places a raw file (PDF, Word document, plain text, code file, web clipping) into the designated input folder.
 2. The system detects the new file automatically.
-3. The file is parsed, normalised, and archived. The original is never modified.
+3. The file is parsed, normalized, and archived. The original is never modified.
 4. The system confirms successful ingestion to the user.
-5. A concise ingestion report is generated, summarising: extracted concepts, source metadata, and any new links created in the knowledge base.
+5. A concise ingestion report is generated, summarizing: extracted concepts, source metadata, and any new links created in the knowledge base.
 
 **Success criteria:**
 
@@ -90,20 +90,20 @@ Individual researchers, developers, and knowledge professionals who:
 **Success criteria:**
 
 - New concepts are consistently identified and filed.
-- Existing concepts are correctly recognised even when phrased differently (aliases, paraphrases).
+- Existing concepts are correctly recognized even when phrased differently (aliases, paraphrases).
 - All notes remain valid and openable in standard Markdown editors after processing.
 
 ---
 
 ### 3.3 Querying & Insight Generation
 
-**Goal:** The user can ask a natural-language question and receive a synthesised, well-grounded answer that goes beyond what any single note contains.
+**Goal:** The user can ask a natural-language question and receive a synthesized, well-grounded answer that goes beyond what any single note contains.
 
 **Workflow:**
 
 1. User submits a query via CLI or local web interface.
 2. The system retrieves the most relevant notes and their connected context from the knowledge base.
-3. An answer is synthesised across multiple sources, with citations.
+3. An answer is synthesized across multiple sources, with citations.
 4. If the answer represents a genuinely novel insight not already captured in the knowledge base, the system files it as a new linked note automatically.
 
 **Success criteria:**
@@ -161,7 +161,7 @@ These are design targets for the initial hardware configuration, not hard constr
 | -------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Ingestion latency    | Adequate for interactive use on the target hardware | Swap to a smaller or faster LLM for the entity resolution step; switch to a cloud backend as an explicit opt-in                                         |
 | Query latency        | Adequate for interactive use on the target hardware | Same LLM swap options; FTS5 query time is negligible at v1 scale                                                                                        |
-| Knowledge base scale | Optimised for up to ~5,000 notes                    | BM25 full-text search extends naturally beyond this; a vector index can be added as a SQLite extension (`sqlite-vec`) without changing other subsystems |
+| Knowledge base scale | Optimized for up to ~5,000 notes                    | BM25 full-text search extends naturally beyond this; a vector index can be added as a SQLite extension (`sqlite-vec`) without changing other subsystems |
 
 *No specific second or millisecond target is stated here because those numbers are hardware-dependent and would need to be revisited before every release. The observability requirement — that the system reports its own timing — is the durable constraint.*
 
