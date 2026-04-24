@@ -1,5 +1,5 @@
 ---
-description:  YOLO Economy Workflow
+description: YOLO Economy Workflow
 ---
 
 # YOLO Economy Workflow
@@ -22,10 +22,10 @@ title: <Task Name>
 timestamp: <YYYYMMDD_HHMMSS>
 ---
 
-## Done <--- Bullet points describing what was accomplished.>
-## Found <--- Key findings, insights, or discoveries.>
-## Status <-- Explicitly list what is broken, unfinished, or requires user input.>
-## Next Steps <-- Recommended actions or future work.>
+## Done <--- [Required] Bullet points describing what was accomplished.>
+## Found <--- [Optional] Key findings, insights, or discoveries.>
+## Status <-- [Optional] Explicitly list what is broken, unfinished, or requires user input.>
+## Next Steps <-- [Optional]Recommended actions or future work.>
 ```
 
 4. **Git Commit**
