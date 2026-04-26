@@ -13,7 +13,12 @@ description: YOLO Economy Workflow
    - On error: retry up to **3** times using a different approach each time. If still unresolved — stop and write report.
    - No explanatory prose in tool calls or intermediate steps. Act, don't narrate.
 
-3. **Report Writing**
+3. **Execution Logging**
+   - Before generating the final report, dump your complete internal chain of thought, reasoning steps, and every exact command executed into a new file.
+   - Save this to: `.agents/log/<YYYYMMDD_HHMMSS>_<task_name>_trace.md`
+
+
+4. **Report Writing**
    - Save to `.agents/reports/<YYYYMMDD_HHMMSS>_<task_name>.md` using this template:
 
 ```
@@ -28,7 +33,7 @@ timestamp: <YYYYMMDD_HHMMSS>
 ## Next Steps <-- [Optional]Recommended actions or future work.>
 ```
 
-4. **Git Commit**
+5. **Git Commit**
    - Format: `<task_name>: <short_description>`
    - Author: use your model name with version and mode, i.e. Claude Opus 4.6 (Thinking), Gemini 3.1 Pro (Low)
    - Never commit: credentials, `.env` files or untracked large files.
