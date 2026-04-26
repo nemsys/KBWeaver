@@ -28,10 +28,11 @@ Built entirely on local-first principles, KBWeaver keeps all your data in plain 
    cd KBWeaver
    ```
 
-2. Initialize the project and sync dependencies using `uv`:
+2. Install KBWeaver globally using `uv` so the CLI command is available everywhere:
    ```bash
-   uv sync
+   uv tool install -e .
    ```
+   *(Note: If `kbweaver` is still not found, make sure `~/.local/bin` is in your PATH or run `uv tool update-shell` and restart your terminal).*
 
 ### Usage
 
